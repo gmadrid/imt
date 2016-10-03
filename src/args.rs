@@ -1,5 +1,5 @@
 use clap::{App, AppSettings, Arg, ArgMatches};
-use finddups;
+use finddups::AddFinddupsSubcommand;
 use result::{Error, Result};
 use std::env;
 use std::ffi::OsString;
@@ -27,17 +27,24 @@ impl<'a> Args<'a> {
 fn parse_cmd_line_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>
   where I: IntoIterator<Item = T>,
         T: Into<OsString> {
-  let builder = App::new("imt")
-    .setting(AppSettings::SubcommandRequired)
+  App::new("imt")
+  // App configuration
+    .about("Collection of image tools in one command")
+    .author("George Madrid <gmadrid@gmail.com>")
     .version("0.0.1")
+    .setting(AppSettings::SubcommandRequired)
+
+    // App arguments
     .arg(Arg::with_name(CONFIG_FILE_LOCATION)
       .short("C")
       .long(CONFIG_FILE_LOCATION)
       .takes_value(true)
-      .help("Location of the config file"));
+      .help("Location of the config file"))
 
-  let builder = finddups::add_subcommand(builder);
+    // Subcommand arguments
+    .add_finddups_subcommand()
 
-  builder.get_matches_from_safe(itr)
+    // Process it.
+    .get_matches_from_safe(itr)
     .map_err(Error::from)
 }

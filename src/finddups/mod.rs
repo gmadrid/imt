@@ -1,3 +1,3 @@
 mod finddups_args;
 
-pub use self::finddups_args::add_subcommand;
+pub use self::finddups_args::AddFinddupsSubcommand;
