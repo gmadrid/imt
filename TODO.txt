@@ -1,0 +1,9 @@
+Things to do
+
+- Find dups
+  - Delete all but one dup
+- Find near dups (ahash, dhash, [haar?])
+- Add file extension
+  - normalize file extensions
+- Download largest tumblr image found.
+  - Deleting the old one on success.
