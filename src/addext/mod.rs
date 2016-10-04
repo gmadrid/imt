@@ -2,29 +2,43 @@ mod args;
 
 use args::ProvidesDirs;
 use clap::ArgMatches;
+use crawler::Crawler;
 use result::Result;
 
 pub use self::args::{AddAddextSubcommand, Args, SUBCOMMAND};
 use std::ffi::OsStr;
 use std::fs::{File, rename};
 use std::io::{Read, Seek, SeekFrom};
-use walkdir::{DirEntry, WalkDir, WalkDirIterator};
+use walkdir::DirEntry;
 
-fn should_process(entry: &DirEntry) -> bool {
-  let path = entry.path();
-  !entry.file_name().to_str().map_or(false, |f| f.starts_with(".")) &&
-  (path.is_dir() || path.extension().unwrap_or(OsStr::new("")).len() == 0)
+#[derive(Debug)]
+struct AddextCrawler {
 }
 
-fn process_entry(entry: &DirEntry) -> Result<()> {
-  let mut file = try!(File::open(entry.path()));
-  if try!(is_jpeg(&mut file)) {
-    // TODO: make this a flag
-    // TODO: add flag to report files without extensions that are unrecognized.
-    try!(rename(entry.path(), entry.path().with_extension("jpg")));
+impl AddextCrawler {
+  fn new() -> AddextCrawler {
+    AddextCrawler {}
+  }
+}
+
+impl Crawler for AddextCrawler {
+  fn should_process_file(&self, entry: &DirEntry) -> bool {
+    // Skip directories that start with ".". ("Hidden" files, also .DS_Store)
+    !entry.file_name().to_str().map_or(false, |f| f.starts_with(".")) &&
+    // Also skip files that already have an extension.
+    entry.path().extension().unwrap_or(OsStr::new("")).len() == 0
   }
 
-  Ok(())
+  fn process_file_entry(&mut self, entry: &DirEntry) -> Result<()> {
+    let mut file = try!(File::open(entry.path()));
+    if try!(is_jpeg(&mut file)) {
+      // TODO: make this a flag
+      // TODO: add flag to report files without extensions that are unrecognized.
+      try!(rename(entry.path(), entry.path().with_extension("jpg")));
+    }
+
+    Ok(())
+  }
 }
 
 fn is_jpeg(file: &mut File) -> Result<bool> {
@@ -55,20 +69,10 @@ fn read_last_two_bytes(file: &mut File) -> Result<[u8; 2]> {
   seek_and_read_two_bytes(file, SeekFrom::End(-2))
 }
 
-// TODO: make this use the Crawler trait.
 pub fn do_subcommand<'a>(matches: &ArgMatches<'a>) -> Result<()> {
   let args = Args::new(matches);
 
-  for dir in args.dirs() {
-    for entry in WalkDir::new(dir).into_iter().filter_entry(|e| should_process(e)) {
-      let entry = entry.unwrap();
-      if !entry.file_type().is_dir() {
-        match process_entry(&entry) {
-          Err(err) => println!("Error: {:?}", err),
-          Ok(_) => {}
-        }
-      }
-    }
-  }
+  let mut crawler = AddextCrawler::new();
+  try!(crawler.process_dirs(args.dirs()));
   Ok(())
 }
