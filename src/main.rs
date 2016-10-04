@@ -1,4 +1,7 @@
 extern crate clap;
+extern crate sha2;
+extern crate term_size;
+extern crate walkdir;
 
 mod args;
 mod finddups;
@@ -7,7 +10,12 @@ mod result;
 use result::{Error, Result};
 
 fn real_main() -> Result<()> {
-  let _ = try!(args::Args::parse());
+  let matches = try!(args::parse());
+  match matches.subcommand() {
+    (finddups::SUBCOMMAND, Some(args)) => finddups::do_subcommand(args),
+    _ => {} // no-op. clap should ensure that there is always a subcommand.
+  }
+
   Ok(())
 }
 

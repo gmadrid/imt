@@ -6,22 +6,14 @@ use std::ffi::OsString;
 
 static CONFIG_FILE_LOCATION: &'static str = "config";
 
-#[derive(Debug)]
-pub struct Args<'a> {
-  matches: ArgMatches<'a>,
+pub fn parse<'a>() -> Result<ArgMatches<'a>> {
+  parse_from(env::args_os())
 }
 
-impl<'a> Args<'a> {
-  pub fn parse() -> Result<Args<'a>> {
-    Args::parse_from(env::args_os())
-  }
-
-  fn parse_from<I, T>(itr: I) -> Result<Args<'a>>
-    where I: IntoIterator<Item = T>,
-          T: Into<OsString> {
-    let matches = try!(parse_cmd_line_from(itr));
-    Ok(Args { matches: matches })
-  }
+fn parse_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>
+  where I: IntoIterator<Item = T>,
+        T: Into<OsString> {
+  parse_cmd_line_from(itr)
 }
 
 fn parse_cmd_line_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>

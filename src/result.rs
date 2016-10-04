@@ -15,3 +15,9 @@ impl From<clap::Error> for Error {
     Error::Clap(err)
   }
 }
+
+impl From<io::Error> for Error {
+  fn from(err: io::Error) -> Error {
+    Error::IO(err)
+  }
+}
