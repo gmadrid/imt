@@ -1,5 +1,5 @@
 use std::io;
-use super::finddups_args::{PREVIEW, PRINT, QUIET};
+use super::args::{PREVIEW, PRINT, QUIET};
 
 pub trait Opener {
   fn open_group(&self, group: &Vec<&str>) -> io::Result<()>;

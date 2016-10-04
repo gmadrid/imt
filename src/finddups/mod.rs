@@ -1,10 +1,11 @@
 mod counter;
-mod finddups_args;
+mod args;
 mod opener;
 
+use args::ProvidesDirs;
 use clap::ArgMatches;
 
-pub use self::finddups_args::{AddFinddupsSubcommand, Args, SUBCOMMAND};
+pub use self::args::{AddFinddupsSubcommand, Args, SUBCOMMAND};
 use sha2::Sha256;
 use sha2::digest::Digest;
 use std::collections::HashMap;

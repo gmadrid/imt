@@ -1,9 +1,8 @@
+use args::{DIR, HasMatches, ProvidesDirs};
 use clap::{App, Arg, ArgMatches, SubCommand};
-use std::path::Path;
 use super::opener::{self, Opener};
 
 static ACTION: &'static str = "action";
-static DIR: &'static str = "DIR";
 pub const SUBCOMMAND: &'static str = "finddups";
 
 pub const PREVIEW: &'static str = "preview";
@@ -21,25 +20,20 @@ impl<'a> Args<'a> {
     Args { matches: matches }
   }
 
-  pub fn dirs(&self) -> Vec<&str> {
-    let values: Option<Vec<&str>> = self.matches.values_of(DIR).map(|x| x.collect());
-    values.map_or_else(|| Vec::new(), |v| {
-      v.into_iter()
-        .filter(|dir| {
-          let path = Path::new(dir);
-          // TODO: print a warning when a path is excluded.
-          return path.exists() && path.is_dir();
-        })
-        .collect()
-    })
-  }
-
   pub fn opener(&self) -> Box<Opener> {
     // default value guarantees that this will unwrap.
     let action = self.matches.value_of(ACTION).unwrap();
     opener::opener_for_option(action)
   }
 }
+
+impl<'a> HasMatches for Args<'a> {
+  fn matches(&self) -> &ArgMatches {
+    self.matches
+  }
+}
+
+impl<'a> ProvidesDirs for Args<'a> {}
 
 pub trait AddFinddupsSubcommand<'a, 'b> {
   fn add_finddups_subcommand(self) -> App<'a, 'b>;
