@@ -1,10 +1,10 @@
 Things to do
 
-- Find dups
+X Find dups
   - Add Exclude option
   - Delete all but one dup
 - Find near dups (ahash, dhash, [haar?])
-- Add file extension
+X Add file extension
   - normalize file extensions
 - Download largest tumblr image found.
   - Deleting the old one on success.
