@@ -10,6 +10,7 @@ use std::fs::{File, rename};
 use std::io::{Read, Seek, SeekFrom};
 use walkdir::{DirEntry, WalkDir, WalkDirIterator};
 
+// TODO: package this crawl logic into a trait.
 fn should_process(entry: &DirEntry) -> bool {
   let path = entry.path();
   !entry.file_name().to_str().map_or(false, |f| f.starts_with(".")) &&
@@ -20,6 +21,7 @@ fn process_entry(entry: &DirEntry) -> Result<()> {
   let mut file = try!(File::open(entry.path()));
   if try!(is_jpeg(&mut file)) {
     // TODO: make this a flag
+    // TODO: add flag to report files without extensions that are unrecognized.
     try!(rename(entry.path(), entry.path().with_extension("jpg")));
   }
 
