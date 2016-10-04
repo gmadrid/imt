@@ -1,5 +1,5 @@
 use args::{DIR, HasMatches, ProvidesDirs};
-use clap::{App, Arg, ArgMatches, SubCommand};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 pub const SUBCOMMAND: &'static str = "addext";
 
@@ -30,6 +30,7 @@ impl<'a, 'b> AddAddextSubcommand<'a, 'b> for App<'a, 'b> {
   fn add_addext_subcommand(self) -> App<'a, 'b> {
     self.subcommand(SubCommand::with_name(SUBCOMMAND)
       .about("add extensions to files when they are missing")
+      .setting(AppSettings::UnifiedHelpMessage)
       .arg(Arg::with_name(DIR)
         .help("Directories to crawl")
         .index(1)

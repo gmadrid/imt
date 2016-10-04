@@ -10,7 +10,6 @@ use std::fs::{File, rename};
 use std::io::{Read, Seek, SeekFrom};
 use walkdir::{DirEntry, WalkDir, WalkDirIterator};
 
-// TODO: package this crawl logic into a trait.
 fn should_process(entry: &DirEntry) -> bool {
   let path = entry.path();
   !entry.file_name().to_str().map_or(false, |f| f.starts_with(".")) &&
@@ -56,8 +55,8 @@ fn read_last_two_bytes(file: &mut File) -> Result<[u8; 2]> {
   seek_and_read_two_bytes(file, SeekFrom::End(-2))
 }
 
-
-pub fn do_subcommand<'a>(matches: &ArgMatches<'a>) {
+// TODO: make this use the Crawler trait.
+pub fn do_subcommand<'a>(matches: &ArgMatches<'a>) -> Result<()> {
   let args = Args::new(matches);
 
   for dir in args.dirs() {
@@ -71,5 +70,5 @@ pub fn do_subcommand<'a>(matches: &ArgMatches<'a>) {
       }
     }
   }
-
+  Ok(())
 }

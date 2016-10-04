@@ -2,6 +2,7 @@ use std::io;
 use super::args::{PREVIEW, PRINT, QUIET};
 
 pub trait Opener {
+  // TODO: make this result::Result
   fn open_group(&self, group: &Vec<&str>) -> io::Result<()>;
 }
 

@@ -5,6 +5,7 @@ extern crate walkdir;
 
 mod addext;
 mod args;
+mod crawler;
 mod finddups;
 mod result;
 
@@ -13,8 +14,8 @@ use result::{Error, Result};
 fn real_main() -> Result<()> {
   let matches = try!(args::parse());
   match matches.subcommand() {
-    (addext::SUBCOMMAND, Some(sub_matches)) => addext::do_subcommand(sub_matches),
-    (finddups::SUBCOMMAND, Some(sub_matches)) => finddups::do_subcommand(sub_matches),
+    (addext::SUBCOMMAND, Some(sub_matches)) => try!(addext::do_subcommand(sub_matches)),
+    (finddups::SUBCOMMAND, Some(sub_matches)) => try!(finddups::do_subcommand(sub_matches)),
     _ => {} // no-op. clap should ensure that there is always a subcommand.
   }
 

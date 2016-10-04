@@ -4,87 +4,84 @@ mod opener;
 
 use args::ProvidesDirs;
 use clap::ArgMatches;
-
+use crawler::Crawler;
+use result::Result;
 pub use self::args::{AddFinddupsSubcommand, Args, SUBCOMMAND};
 use sha2::Sha256;
 use sha2::digest::Digest;
 use std::collections::HashMap;
 use std::fs;
-use std::io::{self, Read};
-use walkdir::{DirEntry, WalkDir, WalkDirIterator};
+use std::io::Read;
+use walkdir::DirEntry;
 
-struct FileInfo {
-  path: String,
+struct FinddupsCrawler {
+  file_map: HashMap<String, Vec<String>>,
+  counter: counter::Counter,
+  opener: Box<opener::Opener>,
 }
 
-fn should_skip(entry: &DirEntry) -> bool {
-  if let Ok(metadata) = entry.metadata() {
-    if metadata.len() < 1 {
-      return true;
+impl FinddupsCrawler {
+  fn new(opener: Box<opener::Opener>) -> FinddupsCrawler {
+    FinddupsCrawler {
+      file_map: HashMap::new(),
+      counter: counter::Counter::new(),
+      opener: opener,
     }
-  } else {
+  }
+}
+
+impl Crawler for FinddupsCrawler {
+  fn should_process_file(&self, entry: &DirEntry) -> bool {
+    if entry.metadata().map(|m| m.len() < 1).unwrap_or(false) {
+      return false;
+    }
+
+    if entry.path().file_stem().map_or(false, |stem| stem == ".DS_Store") {
+      return false;
+    }
+
     return true;
   }
 
-  if let Some(stem) = entry.path().file_stem() {
-    if stem == ".DS_Store" {
-      return true;
-    }
+  fn process_file_entry(&mut self, entry: &DirEntry) -> Result<()> {
+    let path = entry.path();
+    let mut f = try!(fs::File::open(path));
+    let mut buffer = Vec::new();
+    try!(f.read_to_end(&mut buffer));
+
+    let mut hasher = Sha256::new();
+    hasher.input(buffer.as_slice());
+    let hash = hasher.result_str();
+
+    let fname = entry.path().to_str().unwrap().to_string();
+    let info = fname.clone();
+    let vec = self.file_map.entry(hash).or_insert_with(|| Vec::new());
+    try!(self.counter.inc(Some(&fname)));
+    vec.push(info);
+
+    Ok(())
   }
 
-  false
-}
+  fn done_processing(&mut self) -> Result<()> {
+    match self.counter.done(None) {
+      Err(err) => println!("{:?}", err),
+      _ => {}
+    }
 
-fn process_file_entry(entry: &DirEntry,
-                      file_map: &mut HashMap<String, Vec<FileInfo>>,
-                      counter: &mut counter::Counter)
-                      -> io::Result<()> {
-
-  let path = entry.path();
-  let mut f = try!(fs::File::open(path));
-  let mut buffer = Vec::new();
-  try!(f.read_to_end(&mut buffer));
-
-  let mut hasher = Sha256::new();
-  hasher.input(buffer.as_slice());
-  let hash = hasher.result_str();
-
-  let fname = entry.path().to_str().unwrap().to_string();
-  let info = FileInfo { path: fname.clone() };
-  let vec = file_map.entry(hash).or_insert_with(|| Vec::new());
-  try!(counter.inc(Some(&fname)));
-  vec.push(info);
-
-  Ok(())
-}
-
-pub fn do_subcommand<'a>(matches: &ArgMatches<'a>) {
-  let args = Args::new(matches);
-  let mut counter = counter::Counter::new();
-  let mut map: HashMap<String, Vec<FileInfo>> = HashMap::new();
-
-  for dir in args.dirs() {
-    for entry in WalkDir::new(dir)
-      .into_iter()
-      .filter_entry(|e| !should_skip(e)) {
-      let entry = entry.unwrap();
-      if entry.file_type().is_file() {
-        match process_file_entry(&entry, &mut map, &mut counter) {
-          Err(err) => println!("{:?}", err),
-          _ => {}
-        }
+    for v in self.file_map.values() {
+      if v.len() > 1 {
+        // TODO: get rid of this unwrap.
+        self.opener.open_group(&v.iter().map(|path| path.as_str()).collect()).unwrap();
       }
     }
+    Ok(())
   }
-  match counter.done(None) {
-    Err(err) => println!("{:?}", err),
-    _ => {}
-  }
+}
 
-  let opener = args.opener();
-  for v in map.values() {
-    if v.len() > 1 {
-      opener.open_group(&v.iter().map(|fi| fi.path.as_str()).collect()).unwrap();
-    }
-  }
+pub fn do_subcommand<'a>(matches: &ArgMatches<'a>) -> Result<()> {
+  let args = Args::new(matches);
+
+  let mut crawler = FinddupsCrawler::new(args.opener());
+  try!(crawler.process_dirs(args.dirs()));
+  Ok(())
 }

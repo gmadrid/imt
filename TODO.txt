@@ -8,3 +8,4 @@ Things to do
   - normalize file extensions
 - Download largest tumblr image found.
   - Deleting the old one on success.
+- Config file with arg defaults (overridden by cmdline)

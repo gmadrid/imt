@@ -43,7 +43,10 @@ fn parse_cmd_line_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>
     .about("Collection of image tools in one command")
     .author("George Madrid <gmadrid@gmail.com>")
     .version("0.0.1")
-    .setting(AppSettings::SubcommandRequired)
+    .setting(AppSettings::StrictUtf8)
+    .setting(AppSettings::SubcommandRequiredElseHelp)
+    .setting(AppSettings::UnifiedHelpMessage)
+    .setting(AppSettings::VersionlessSubcommands)
 
     // App arguments
     .arg(Arg::with_name(CONFIG_FILE_LOCATION)
