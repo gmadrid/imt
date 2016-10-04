@@ -32,13 +32,6 @@ pub fn parse<'a>() -> Result<ArgMatches<'a>> {
 fn parse_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>
   where I: IntoIterator<Item = T>,
         T: Into<OsString> {
-  parse_cmd_line_from(itr)
-}
-
-// TODO: this is an extra function. Get rid of it.
-fn parse_cmd_line_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>
-  where I: IntoIterator<Item = T>,
-        T: Into<OsString> {
   App::new("imt")
   // App configuration
     .about("Collection of image tools in one command")
