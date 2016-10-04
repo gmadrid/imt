@@ -1,19 +1,18 @@
-use std::io;
+use result::Result;
 use super::args::{PREVIEW, PRINT, QUIET};
 
 pub trait Opener {
-  // TODO: make this result::Result
-  fn open_group(&self, group: &Vec<&str>) -> io::Result<()>;
+  fn open_group(&self, group: &Vec<&str>) -> Result<()>;
 }
 
 mod print {
-  use std::io;
+  use result::Result;
   use super::Opener;
 
   pub struct PrintOpener {}
 
   impl Opener for PrintOpener {
-    fn open_group(&self, group: &Vec<&str>) -> io::Result<()> {
+    fn open_group(&self, group: &Vec<&str>) -> Result<()> {
       println!("GROUP:");
       for path in group {
         println!("    {}", path);
@@ -28,13 +27,13 @@ mod print {
 }
 
 mod noop {
-  use std::io;
+  use result::Result;
   use super::Opener;
 
   pub struct NoopOpener {}
 
   impl Opener for NoopOpener {
-    fn open_group(&self, _: &Vec<&str>) -> io::Result<()> {
+    fn open_group(&self, _: &Vec<&str>) -> Result<()> {
       Ok(())
     }
   }
@@ -45,19 +44,19 @@ mod noop {
 }
 
 mod preview {
-  use std::io;
+  use result::Result;
   use std::process::Command;
   use super::Opener;
 
   pub struct PreviewOpener {}
 
   impl Opener for PreviewOpener {
-    fn open_group(&self, group: &Vec<&str>) -> io::Result<()> {
+    fn open_group(&self, group: &Vec<&str>) -> Result<()> {
       let mut cmd = Command::new("open");
       for path in group {
         cmd.arg(path);
       }
-      cmd.spawn().map(|_| ())
+      Ok(try!(cmd.spawn().map(|_| ())))
     }
   }
 
