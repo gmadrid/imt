@@ -10,12 +10,13 @@ pub use self::args::{AddFinddupsSubcommand, Args, SUBCOMMAND};
 use sha2::Sha256;
 use sha2::digest::Digest;
 use std::collections::HashMap;
+use std::ffi::OsString;
 use std::fs;
 use std::io::Read;
 use walkdir::DirEntry;
 
 struct FinddupsCrawler {
-  file_map: HashMap<String, Vec<String>>,
+  file_map: HashMap<String, Vec<OsString>>,
   counter: counter::Counter,
   opener: Box<opener::Opener>,
 }
@@ -53,11 +54,10 @@ impl Crawler for FinddupsCrawler {
     hasher.input(buffer.as_slice());
     let hash = hasher.result_str();
 
-    let fname = entry.path().to_str().unwrap().to_string();
-    let info = fname.clone();
+    let fname = entry.path().as_os_str();
     let vec = self.file_map.entry(hash).or_insert_with(|| Vec::new());
-    try!(self.counter.inc(Some(&fname)));
-    vec.push(info);
+    try!(self.counter.inc(Some(&fname.to_string_lossy())));
+    vec.push(fname.to_owned());
 
     Ok(())
   }
@@ -70,8 +70,10 @@ impl Crawler for FinddupsCrawler {
 
     for v in self.file_map.values() {
       if v.len() > 1 {
-        // TODO: get rid of this unwrap.
-        self.opener.open_group(&v.iter().map(|path| path.as_str()).collect()).unwrap();
+        match self.opener.open_group(&v.iter().map(|path| path.as_os_str()).collect()) {
+          Err(error) => println!("Error while opening: {:?}", error),
+          _ => {}
+        }
       }
     }
     Ok(())
