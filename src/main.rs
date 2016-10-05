@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate clap;
 extern crate sha2;
 extern crate term_size;
@@ -8,7 +9,6 @@ mod args;
 mod crawler;
 mod finddups;
 mod result;
-mod version;
 
 use result::{Error, Result};
 
