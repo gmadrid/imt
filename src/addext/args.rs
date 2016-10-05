@@ -2,6 +2,7 @@ use args::{DIR, HasMatches, ProvidesDirs};
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 pub const SUBCOMMAND: &'static str = "addext";
+pub const MOVE: &'static str = "rename";
 
 #[derive(Debug)]
 pub struct Args<'a> {
@@ -20,6 +21,10 @@ impl<'a> Args<'a> {
   pub fn new<'b>(matches: &'b ArgMatches) -> Args<'b> {
     Args { matches: matches }
   }
+
+  pub fn rename(&self) -> bool {
+    self.matches.is_present(MOVE)
+  }
 }
 
 pub trait AddAddextSubcommand<'a, 'b> {
@@ -35,6 +40,9 @@ impl<'a, 'b> AddAddextSubcommand<'a, 'b> for App<'a, 'b> {
         .help("Directories to crawl")
         .index(1)
         .multiple(true)
-        .required(true)))
+        .required(true))
+      .arg(Arg::with_name(MOVE)
+        .help("Rename file with extension")
+        .long(MOVE)))
   }
 }

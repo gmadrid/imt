@@ -13,11 +13,12 @@ use walkdir::DirEntry;
 
 #[derive(Debug)]
 struct AddextCrawler {
+  rename: bool,
 }
 
 impl AddextCrawler {
-  fn new() -> AddextCrawler {
-    AddextCrawler {}
+  fn new(rename: bool) -> AddextCrawler {
+    AddextCrawler { rename: rename }
   }
 }
 
@@ -32,9 +33,10 @@ impl Crawler for AddextCrawler {
   fn process_file_entry(&mut self, entry: &DirEntry) -> Result<()> {
     let mut file = try!(File::open(entry.path()));
     if try!(is_jpeg(&mut file)) {
-      // TODO: make this a flag
       // TODO: add flag to report files without extensions that are unrecognized.
-      try!(rename(entry.path(), entry.path().with_extension("jpg")));
+      if self.rename {
+        try!(rename(entry.path(), entry.path().with_extension("jpg")));
+      }
     }
 
     Ok(())
@@ -72,7 +74,7 @@ fn read_last_two_bytes(file: &mut File) -> Result<[u8; 2]> {
 pub fn do_subcommand<'a>(matches: &ArgMatches<'a>) -> Result<()> {
   let args = Args::new(matches);
 
-  let mut crawler = AddextCrawler::new();
+  let mut crawler = AddextCrawler::new(args.rename());
   try!(crawler.process_dirs(args.dirs()));
   Ok(())
 }
