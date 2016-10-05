@@ -36,7 +36,7 @@ fn parse_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>
   // App configuration
     .about("Collection of image tools in one command")
     .author("George Madrid <gmadrid@gmail.com>")
-    .version("0.0.1")
+    .version("0.0.2a")
     .setting(AppSettings::StrictUtf8)
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .setting(AppSettings::UnifiedHelpMessage)

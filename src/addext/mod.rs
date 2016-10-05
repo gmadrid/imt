@@ -33,9 +33,11 @@ impl Crawler for AddextCrawler {
   fn process_file_entry(&mut self, entry: &DirEntry) -> Result<()> {
     let mut file = try!(File::open(entry.path()));
     if try!(is_jpeg(&mut file)) {
-      // TODO: add flag to report files without extensions that are unrecognized.
       if self.rename {
         try!(rename(entry.path(), entry.path().with_extension("jpg")));
+        println!("Renamed: {}", entry.path().display());
+      } else {
+        println!("{}", entry.path().display());
       }
     }
 
