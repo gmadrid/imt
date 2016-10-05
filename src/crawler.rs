@@ -1,6 +1,6 @@
 // A thin shim around WalkDir.
 
-use result::Result;
+use result::{Error, Result};
 use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
 
@@ -13,6 +13,12 @@ pub trait Crawler {
   // After process_dirs has finished crawling, call this.
   fn done_processing(&mut self) -> Result<()> {
     Ok(())
+  }
+
+  // Handle an error while processing entries. Default behavior just calls println!.
+  // Implementors can override this freely.
+  fn handle_error(&self, error: &Error) {
+    println!("{:?}", error);
   }
 
   // More general filter function. Default behavior includes all non-files, and
@@ -33,13 +39,15 @@ pub trait Crawler {
     where T: AsRef<Path> {
     for dir in dirs {
       for entry in WalkDir::new(dir) {
-        // TODO: handle this potential unwrap error better.
-        let entry = entry.unwrap();
-        if self.should_process(&entry) {
-          match self.process_entry(&entry) {
-            // TODO: call a better error handler here.
-            Err(err) => println!("{:?}", err),
-            _ => {}
+        match entry {
+          Err(error) => self.handle_error(&Error::from(error)),
+          Ok(entry) => {
+            if self.should_process(&entry) {
+              match self.process_entry(&entry) {
+                Err(err) => self.handle_error(&err),
+                _ => {}
+              }
+            }
           }
         }
       }
