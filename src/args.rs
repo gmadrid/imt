@@ -5,6 +5,7 @@ use result::{Error, Result};
 use std::env;
 use std::ffi::OsString;
 use std::path::Path;
+use version;
 
 static CONFIG_FILE_LOCATION: &'static str = "config";
 pub static DIR: &'static str = "DIR";
@@ -36,7 +37,7 @@ fn parse_from<'a, I, T>(itr: I) -> Result<ArgMatches<'a>>
   // App configuration
     .about("Collection of image tools in one command")
     .author("George Madrid <gmadrid@gmail.com>")
-    .version("0.0.2a")
+    .version(version::VERSION)
     .setting(AppSettings::StrictUtf8)
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .setting(AppSettings::UnifiedHelpMessage)

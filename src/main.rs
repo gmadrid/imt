@@ -8,6 +8,7 @@ mod args;
 mod crawler;
 mod finddups;
 mod result;
+mod version;
 
 use result::{Error, Result};
 

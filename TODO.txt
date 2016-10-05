@@ -9,3 +9,9 @@ X Add file extension
 - Download largest tumblr image found.
   - Deleting the old one on success.
 - Config file with arg defaults (overridden by cmdline)
+- Write release script (in Rust)
+  - Remove dev from version.rs
+  - Drop a git tag with current version
+  - Update version number in version.rs (with 'dev' suffix)
+  - Add date to version header in Release.md
+  - Start a new section with the new version in Release.md
